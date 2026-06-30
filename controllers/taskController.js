@@ -24,9 +24,15 @@ const getTaskById = (req, res) => {
 const createTask = (req, res) => {
   const { title } = req.body;
 
+  if (!title || typeof title !== "string" || !title.trim()) {
+    return res.status(400).json({
+      message: "Title is required and must be a non-empty string",
+    });
+  }
+
   const newTask = {
-    id: tasks.length + 1,
-    title,
+    id: tasks.nextId++,
+    title: title.trim(),
     completed: false,
   };
 
@@ -47,8 +53,23 @@ const updateTask = (req, res) => {
     });
   }
 
-  task.title = req.body.title ?? task.title;
-  task.completed = req.body.completed ?? task.completed;
+  if (req.body.title !== undefined) {
+    if (typeof req.body.title !== "string" || !req.body.title.trim()) {
+      return res.status(400).json({
+        message: "Title must be a non-empty string",
+      });
+    }
+    task.title = req.body.title.trim();
+  }
+
+  if (req.body.completed !== undefined) {
+    if (typeof req.body.completed !== "boolean") {
+      return res.status(400).json({
+        message: "Completed must be a boolean",
+      });
+    }
+    task.completed = req.body.completed;
+  }
 
   res.json(task);
 };
